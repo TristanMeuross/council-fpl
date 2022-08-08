@@ -7,36 +7,115 @@ Created on Fri Jul 22 16:40:01 2022
 
 import requests
 import pandas as pd
-import numpy as np
+from pandas.api.types import CategoricalDtype
 
-from modules.my_modules import upload_gsheets, format_gsheets
+from modules.my_modules import upload_gsheets
 
-url = 'https://fantasy.premierleague.com/api/entry/2969318/history/'
-r = requests.get(url)
-json = r.json()
 
-#%%
+team_id = [
+    '2969318',
+    '440350',
+    '4056362',
+    '5521906',
+    '1881171',
+    '5380567',
+    '2927478',
+    '441995',
+    '453402',
+    '4763326',
+    '3504906',
+    '3662726'
+]
 
-current_df = pd.DataFrame(json['past'])
-print(current_df.head())
 
-#%%
 
-points_df = pd.read_csv('data_files/council-fpl-tableau-data.csv')
-points_df['cumulative_points'] = points_df.groupby(['team_name'])['points'].cumsum()
-points_df['weekly_rank'] = points_df.groupby(
-    ['gameweek']
-    )['cumulative_points'].rank(
-        method='first',
-        ascending=False
+current_df = pd.DataFrame(columns=[
+    'event',
+    'points',
+    'total_points',
+    'rank',
+    'rank_sort',
+    'overall_rank',
+    'bank',
+    'value',
+    'event_transfers',
+    'event_transfers_cost',
+    'points_on_bench',
+    'team_id'
+])
+
+
+for i in team_id:
+    url = (
+        'https://fantasy.premierleague.com/api/entry/'
+        + i
+        + '/history/'
         )
+    r = requests.get(url)
+    json = r.json()
+    df = pd.DataFrame(json['current'])
+    df['team_id'] = i
+    current_df = pd.concat([current_df, df])
 
-
-workbook_name = 'council-fpl-tableau-data'
-upload_gsheets(
-    workbook_name,
-    [points_df],
-    sheets=[0]
+current_df.rename(
+    columns={'event':'gameweek'},
+    inplace=True
 )
 
-#%%
+current_df = current_df.astype({
+    'gameweek':'int32',
+    'event_transfers':'int32',
+    'event_transfers_cost':'int32'
+    })
+
+
+current_df['weekly_rank'] = current_df.groupby(['gameweek'])['total_points'].rank(
+        method='first',
+        ascending=False
+)
+
+current_df['total_transfers'] = current_df.groupby(['team_id'])['event_transfers'].cumsum()
+current_df['total_transfers_cost'] = current_df.groupby(['team_id'])['event_transfers_cost'].cumsum()
+
+# Sets up the team_id order as a custom list
+cat_size_order = CategoricalDtype(
+    team_id, 
+    ordered=True
+)
+
+# Sets the order of the team_id column to the team_id list
+current_df['team_id'] = current_df['team_id'].astype(cat_size_order)
+
+# Sorts by team_id list then gameweek
+current_df.sort_values(by=['team_id', 'gameweek'], inplace=True)
+        
+weekly_points_df = current_df[[
+    'team_id',
+    'gameweek',
+    'points',
+    'total_points',
+    'weekly_rank',
+    'points_on_bench'
+]]
+
+transfers_df = current_df[[
+    'team_id',
+    'gameweek',
+    'bank',
+    'value',
+    'event_transfers',
+    'total_transfers',
+    'event_transfers_cost',
+    'total_transfers_cost'
+]]
+
+
+workbook_name = 'council-fpl-tableau-data-22-23'
+upload_gsheets(
+    workbook_name,
+    [weekly_points_df, transfers_df],
+    sheets=[0,1]
+)
+
+
+
