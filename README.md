@@ -9,3 +9,7 @@ The data is compiled and processed in the following method:
   - Packages used: Pandas, requests, gspread and gspread_pandas
 - Python script is run daily at 12pm AEST using Cron on a Raspberry Pi 4B
 - Tableau Public is used to vizualise the data: 22/23 season version can be found [here](https://public.tableau.com/views/FPLMini-LeagueStatistics2223/Overview?:language=en-GB&:display_count=n&:origin=viz_share_link).
+
+## Acknowledgement
+- "Fantasy Premier League API Endpoints: A Detailed Guide" - Frenzel Timothy (medium.com)
+- Jeff Koman's "Fantasy Premier League 21/22: Flocktage Days" viz on Tableau Public for design inspiration
