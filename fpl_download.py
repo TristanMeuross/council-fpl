@@ -2,7 +2,7 @@
 """
 Created on Fri Jul 22 16:40:01 2022
 
-@author: Doug
+@author: Tristan
 """
 
 import requests
@@ -28,7 +28,6 @@ team_id = [
 ]
 
 
-
 current_df = pd.DataFrame(columns=[
     'event',
     'points',
@@ -46,40 +45,42 @@ current_df = pd.DataFrame(columns=[
 
 
 for i in team_id:
-    url = (
+    URL = (
         'https://fantasy.premierleague.com/api/entry/'
         + i
         + '/history/'
-        )
-    r = requests.get(url)
+    )
+    r = requests.get(URL)
     json = r.json()
     df = pd.DataFrame(json['current'])
     df['team_id'] = i
     current_df = pd.concat([current_df, df])
 
 current_df.rename(
-    columns={'event':'gameweek'},
+    columns={'event': 'gameweek'},
     inplace=True
 )
 
 current_df = current_df.astype({
-    'gameweek':'int32',
-    'event_transfers':'int32',
-    'event_transfers_cost':'int32'
-    })
+    'gameweek': 'int32',
+    'event_transfers': 'int32',
+    'event_transfers_cost': 'int32'
+})
 
 
 current_df['weekly_rank'] = current_df.groupby(['gameweek'])['total_points'].rank(
-        method='first',
-        ascending=False
+    method='first',
+    ascending=False
 )
 
-current_df['total_transfers'] = current_df.groupby(['team_id'])['event_transfers'].cumsum()
-current_df['total_transfers_cost'] = current_df.groupby(['team_id'])['event_transfers_cost'].cumsum()
+current_df['total_transfers'] = current_df.groupby(
+    ['team_id'])['event_transfers'].cumsum()
+current_df['total_transfers_cost'] = current_df.groupby(
+    ['team_id'])['event_transfers_cost'].cumsum()
 
 # Sets up the team_id order as a custom list
 cat_size_order = CategoricalDtype(
-    team_id, 
+    team_id,
     ordered=True
 )
 
@@ -88,7 +89,7 @@ current_df['team_id'] = current_df['team_id'].astype(cat_size_order)
 
 # Sorts by team_id list then gameweek
 current_df.sort_values(by=['team_id', 'gameweek'], inplace=True)
-        
+
 weekly_points_df = current_df[[
     'team_id',
     'gameweek',
@@ -110,12 +111,9 @@ transfers_df = current_df[[
 ]]
 
 
-workbook_name = 'council-fpl-tableau-data-22-23'
+WORKBOOK_NAME = 'council-fpl-tableau-data-22-23'
 upload_gsheets(
-    workbook_name,
+    WORKBOOK_NAME,
     [weekly_points_df, transfers_df],
-    sheets=[0,1]
+    sheets=[0, 1]
 )
-
-
-
