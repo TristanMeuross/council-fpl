@@ -24,7 +24,9 @@ team_id = [
     '453402',
     '4763326',
     '3504906',
-    '3662726'
+    '3662726',
+    '2828384',
+    '6093864'
 ]
 
 
@@ -88,7 +90,7 @@ cat_size_order = CategoricalDtype(
 current_df['team_id'] = current_df['team_id'].astype(cat_size_order)
 
 # Sorts by team_id list then gameweek
-current_df.sort_values(by=['team_id', 'gameweek'], inplace=True)
+current_df.sort_values(by=['gameweek', 'team_id'], inplace=True)
 
 weekly_points_df = current_df[[
     'team_id',
@@ -109,6 +111,10 @@ transfers_df = current_df[[
     'event_transfers_cost',
     'total_transfers_cost'
 ]]
+
+print(current_df)
+print(weekly_points_df)
+print(transfers_df)
 
 
 WORKBOOK_NAME = 'council-fpl-tableau-data-22-23'
