@@ -69,16 +69,17 @@ current_df = current_df.astype({
     'event_transfers_cost': 'int32'
 })
 
+current_df['total_transfers'] = current_df.groupby(
+    ['team_id'])['event_transfers'].cumsum()
+current_df['total_transfers_cost'] = current_df.groupby(
+    ['team_id'])['event_transfers_cost'].cumsum()
+
+current_df.sort_values(by=['total_transfers'], inplace=True)
 
 current_df['weekly_rank'] = current_df.groupby(['gameweek'])['total_points'].rank(
     method='first',
     ascending=False
 )
-
-current_df['total_transfers'] = current_df.groupby(
-    ['team_id'])['event_transfers'].cumsum()
-current_df['total_transfers_cost'] = current_df.groupby(
-    ['team_id'])['event_transfers_cost'].cumsum()
 
 # Sets up the team_id order as a custom list
 cat_size_order = CategoricalDtype(
