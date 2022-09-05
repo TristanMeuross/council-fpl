@@ -113,11 +113,6 @@ transfers_df = current_df[[
     'total_transfers_cost'
 ]]
 
-print(current_df)
-print(weekly_points_df)
-print(transfers_df)
-
-
 WORKBOOK_NAME = 'council-fpl-tableau-data-22-23'
 upload_gsheets(
     WORKBOOK_NAME,
